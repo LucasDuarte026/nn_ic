@@ -1,0 +1,3 @@
+SBS- Sonic based calibration dataset
+ é dataset dos dados gerados pelo sensor sonic-anemométrico que é preciso quanto a velocidade do fluido
+ Utilizado para computar os coeficientes do PF(polinômios aproximados) e treinar a NN (rede neural)
