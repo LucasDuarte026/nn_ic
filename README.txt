@@ -1,2 +1,1 @@
- teste de file
-dawdwa
+Arquivo de descrição dos repositório de Rede Neural feita por lucas 
