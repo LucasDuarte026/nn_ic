@@ -1,58 +1,41 @@
+from email import feedparser
 import pandas as pd
 import numpy as np
 
-# insere as entradas
-# self.input = _data
-# inicializa os neurônios de dimenção 10x1 indo de  -1 a 1 em floats randomizados
-# self.weights = 2 * np.random.random((10, 1))-1
-# self.y = 2 * np.random.random((10, 1))-1
+np.random.seed(0)
 
-data = pd.read_csv('data.txt').T.to_numpy()
+data = [[5.1, 3.5, 1.4, 0.2, 'Iris-setosa'],
+        [4.9, 3.0, 1.4, 0.2, 'Iris-setosa'],
+        [4.7, 3.2, 1.3, 0.2, 'Iris-setosa'],
+        [4.6, 3.1, 1.5, 0.2, 'Iris-setosa'],
+        [5.0, 3.6, 1.4, 0.2, 'Iris-setosa'],
+        [5.4, 3.9, 1.7, 0.4, 'Iris-setosa'],
+        [4.6, 3.4, 1.4, 0.3, 'Iris-setosa'],
+        [5.0, 3.4, 1.5, 0.2, 'Iris-setosa'],
+        [4.4, 2.9, 1.4, 0.2, 'Iris-setosa'],
+        [4.9, 3.1, 1.5, 0.1, 'Iris-setosa']]
 
-entrada = data[:4].T
-for line in range(data[4])
-    np.array[y] = data[4]
-
-print(pd.DataFrame(entrada))
-# print(data[:4])
-
-
-class Flowers_NeuralNetwork():  # rede neural de apenas um layer
-    def __init__(self, learning_rate=0.01, n_inters=1000):
-        np.random.seed(1)
-        self.lr = learning_rate
-        self.n_inter = n_inters
-        self.weights = None
-        self.bias = None
-
-    def _activation_func(self, x):
-        return np.where(1 if x >= 0 else 0)
-
-# função de treinamento
-    # x é a entrada de dados e y é o resultado esperado, ambos em mesma dimensão
-    def feedfoward(self, x, y):
-        elems, n_features = np.shape(x)
-
-        self.weights = np.zeros(n_features)
-
-        y_ = np.array([1 if 1 >= 0 1 elif 2 else 0 for i in y])
-
-        for _ in range(elems):
-            for idx, x_i in range(n_features):
-                linear_calc = np.dot(x_i, self.weights)+self.bias
-                y_predicted = self._activation_func(linear_calc)
-
-                update = self.lr * (y_[idx]-y_predicted)
-                self.weights += update*x_i
-                self.bias += update
-
-    def predict(self, x):
-        linear_calc = np.dot(x, self.weights)+self.bias
-        y_predicted = self._activation_func(linear_calc)
-        return y_predicted
+data = np.array(data)
+print(data)
 
 
-flw = Flowers_NeuralNetwork()
+class NN():
+
+    def __init__(self, shape):
+        n_features, n_size = shape
+        n_neurons=4
+        self.weights = np.random.randn(n_features, n_neurons) # cria 4 neurônios com "n_features" de valores para multiplicar cada entrada
+        self.weights_2 = np.random.randn(n_neurons, n_neurons)# cria 4 neurônios com "n_features" de valores para multiplicar cada entrada
+        # self.bias = np.zeros(n_features, n_size)
+
+    def feedForward(self, X_train):
+        output = np.dot(self.weights, X_train)
+        output_2 = np.dot(self.weights, output)
+        return output_2
 
 
-flw.feedfoward(entrada,info_flowers)
+# print(data[1].T)
+# layer_1 = NN(np.shape(data))
+
+# result = layer_1.feedForward(data[1].T)
+# print(result)
