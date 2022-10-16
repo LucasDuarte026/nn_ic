@@ -1,9 +1,0 @@
-    https://towardsdatascience.com/how-to-build-your-own-neural-network-from-scratch-in-python-68998a08e4f6
-
-    video de um MLP bem feito com calculo:
-        https://www.youtube.com/watch?v=w8yWXqWQYmU&ab_channel=SamsonZhang
-    link dos arquivos:
-        https://www.kaggle.com/code/wwsalmon/simple-mnist-nn-from-scratch-numpy-no-tf-keras/notebook
-    
-    playlist nova
-        https://www.youtube.com/watch?v=Wo5dMEP_BbI&list=PLQVvvaa0QuDcjD5BAw2DxE6OF2tius3V3&ab_channel=sentdex
