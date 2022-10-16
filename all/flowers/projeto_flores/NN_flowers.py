@@ -14,9 +14,11 @@ data_test = [[5.1, 3.5, 1.4, 0.2, 'Iris-setosa'],
              [4.9, 3.1, 1.5, 0.1, 'Iris-setosa']]
 
 # batch de 10 elementos para teste
-data_X = pd.DataFrame(np.array(data).T[:4].T, dtype='float')
-data_Y = pd.DataFrame(data).T[4:].T
-print(data_Y)
+data_X = np.array(data).T[:4].T
+data_Y = np.array(pd.DataFrame(data).T[4:].T)
+data_test = np.array(pd.DataFrame(data_test).T[:4].T)
+data_X = data_X.astype(float)
+data_test = data_test.astype(float)
 
 
 class NN():
@@ -28,16 +30,29 @@ class NN():
 
         self.weights = np.random.randn(n_features, n_neurons)
         self.bias = np.zeros(n_neurons)
-        # cria 4 neurônios com "n_features" de valores para multiplicar cada entrada
+        # cria 4 neurônios com "n_features" de valores para multiplicar cada entrada dos dados iniciais
 
         self.weights_2 = 0.10*np.random.randn(n_neurons, n_neurons)
         self.bias_2 = np.zeros(n_neurons)
-        # cria 4 neurônios com "n_features" de valores para multiplicar cada entrada
+        # cria 4 neurônios com "n_features" de valores para multiplicar cada entrada da primeira camada
+
+        self.weights_3 = 0.10*np.random.randn(n_neurons, 3)
+        self.bias_3 = np.zeros(3)
+        # cria 3 neurônios com "n_features" de valores para multiplicar cada entrada da segunda camada
+
+    def ReLU(self, input):
+        return np.maximum(0, input)
+
+    def softmax(self, input):
+        output = np.exp(input - np.max(input, axis=1, keepdims=True))
+        normalized = output/np.sum(output, axis=1, keepdims=True)
+        return normalized
 
     def feedForward(self, X_train):
-        output = np.dot(X_train, self.weights) + self.bias
-        output_2 = np.dot(output, self.weights_2) + self.bias_2
-        return output_2
+        output = self.ReLU(np.dot(X_train, self.weights) + self.bias)
+        output_2 = self.ReLU(np.dot(output, self.weights_2) + self.bias_2)
+        result = self.softmax(np.dot(output_2, self.weights_3) + self.bias_3)
+        return result
 
 
 # entra com a batch pra definir os parâmetros da rede
@@ -46,15 +61,3 @@ flowers = NN(data_X)
 result = flowers.feedForward(data_X)
 print(pd.DataFrame(result))
 
-# weights = pd.DataFrame(np.random.randn(10, 4).T)
-# print(data_X)
-# print(weights)
-# result = np.dot(data_X, weights).T
-
-
-# for i in range(10):
-#     print("\n")
-
-#     # faz o processamento da entrada de data_X e produz uma saída de mesma dimensão da batch
-#     result = flowers.feedForward(data_X)
-#     print(pd.DataFrame(result))
