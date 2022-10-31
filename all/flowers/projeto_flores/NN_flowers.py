@@ -116,18 +116,18 @@ init_diff = result-data_Y
 
 ''' treinando e alimentando a rede com os dados '''
 for i in range(EPOCHS):
-    if (i//10):
-        print('.',end='')
     for idx in range(len(data_X)//BATCH):
         part = idx*BATCH
-        print(part)
+        print('\r epoch | batch:{:4d}|{:2d}'.format(i, idx), end='')
         flowers.back_Propagation(
             data_X[part:part+BATCH], data_Y[part:part+BATCH])
         result = flowers.feed_Forward(data_X[part:part+BATCH])
         diff = result-data_Y[part:part+BATCH]
-        
+
 print()
 result = flowers.feed_Forward(data_X)
 final_diff = result-data_Y
 print('init_diff: ', np.mean(init_diff, axis=0))
 print('final_diff: ', np.mean(final_diff, axis=0))
+print('weights: ', pd.DataFrame(flowers.weights_3))
+print('bias_output: ', pd.DataFrame(flowers.bias_output))
