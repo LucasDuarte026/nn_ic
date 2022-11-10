@@ -3,14 +3,22 @@ import pandas as pd
 
 # deixar o argumento da função abaixo caso queira randomizar os valores de entrada
 np.random.seed(100)
-BATCH = 1
-EPOCHS = 100
-LEARN_RATE = 0.01 # constante de aprendizado
-data = pd.read_csv('./data.txt')
+
+# configurando parâmetros
+BATCH = 4
+EPOCHS = 1000
+
+IMPLEMENT_MOMENTUM= False # True or False para usar ou não o algoritmo com 'momento'
+LEARN_RATE = 0.01  # constante de aprendizado
+MOM_RATE = 0.01  # constante de momento
+
 
 
 #############################################################################################
+
 '''preparando os dados de entrada e saída'''
+data = np.array(pd.read_csv('./data.txt')) #upload dos valores 
+np.random.shuffle(data)  # embaralhar data
 
 data_X = np.array(data).T[:4].T.astype(float)
 data_Y_text = np.array(pd.DataFrame(data).T[4:].T)
@@ -36,6 +44,7 @@ class NN():
     def __init__(self, train_model):
         batches, n_features = np.shape(train_model)
         n_neurons = 4
+        OUTPUT_FORM_SIZE =3
 
         self.weights_1 = 0.10*np.random.randn(n_features, n_neurons)
         self.bias_1 = np.zeros(n_neurons)
@@ -48,6 +57,13 @@ class NN():
         self.weights_3 = 0.10*np.random.randn(n_neurons, 3)
         self.bias_output = np.zeros(3)
         ''' cria 3 neurônios com "n_features" de valores para multiplicar cada entrada da segunda camada'''
+       
+        self.momentum_3 = np.zeros((OUTPUT_FORM_SIZE,))
+        self.momentum_2 = np.zeros((n_neurons,))
+        self.momentum_1 = np.zeros((n_neurons,))
+        ''' cria 3 vetores que armazenam os valores anteriores dos Dwi para o momento'''
+        
+
 
     def ReLU(self, input):
         return np.maximum(0, input)
@@ -100,6 +116,7 @@ class NN():
         # parametros gerais que serão utilizados por rodada de back propagation
         result = self.feed_Forward(X_train)
         erro = Y_train-result
+        erro_mean = np.sum(erro, axis=0)
         sig_deriv = self.sigmoid_deriv(result)
         relu_deriv_2 = self.ReLU_deriv(self.output_2)
         relu_deriv_1 = self.ReLU_deriv(self.output_1)
@@ -108,11 +125,11 @@ class NN():
         for neuron in range(len(self.weights_3)):
             aux = [0, 0, 0]
             for idx in range(len(self.weights_3[neuron])):
-                delta_bias = LEARN_RATE*erro[0][idx]*sig_deriv[0][idx]
-                self.bias_output[idx] -= delta_bias
+                delta_bias = LEARN_RATE*erro_mean[idx]*sig_deriv[0][idx]
+                self.bias_output[idx] += delta_bias
 
-                delta_w3 = delta_bias * self.output_2[0][idx]
-                self.weights_3[neuron][idx] -= delta_w3
+                delta_w3 = delta_bias * self.output_2[0][idx]  # + MOM_RATE*self.momentum_3[neuron][idx]
+                self.weights_3[neuron][idx] += delta_w3+MOM_RATE*self.momentum_3[idx]
                 aux[idx] = delta_w3
             # montar a matriz do erro por peso (dE/dw_i)
             delta_w3_arr = np.append(delta_w3_arr, [aux], axis=0)
@@ -126,38 +143,67 @@ class NN():
             for idx in range(len(self.weights_2[neuron])):
                 delta_bias_2 = LEARN_RATE * \
                     delta_w3_arr[idx] * relu_deriv_2[0][idx]
-                self.bias_2[idx] -= delta_bias_2
+                self.bias_2[idx] += delta_bias_2
 
                 delta_w2 = delta_bias_2 * self.output_1[0][idx]
-                self.weights_2[neuron][idx] -= delta_w2
+                self.weights_2[neuron][idx] += delta_w2 + \
+                    MOM_RATE*self.momentum_2[idx]
                 aux[idx] = delta_w2
             # montar a matriz do erro por peso (dE/dw_i)
             delta_w2_arr = np.append(delta_w2_arr, [aux], axis=0)
         delta_w2_arr = np.sum(delta_w2_arr, axis=1)
-        # print('\n',delta_w2_arr)
 
         # ajuste dos pesos da 1ª camada (hidden layer)
         for neuron in range(len(self.weights_1)):
             for idx in range(len(self.weights_1[neuron])):
                 delta_bias_1 = LEARN_RATE * \
                     delta_w2_arr[idx]*relu_deriv_1[0][idx]
-                self.bias_1[idx] -= delta_bias_1
+                self.bias_1[idx] += delta_bias_1
 
                 delta_w1 = delta_bias_1 * X_train[0][idx]
-                self.weights_1[neuron][idx] -= delta_w1
-
+                self.weights_1[neuron][idx] += delta_w1 + \
+                    MOM_RATE*self.momentum_1[idx]
+        # levar os erros para a próxima rodada sendo o momento
+        if(IMPLEMENT_MOMENTUM):
+            print('entrou')
+            self.momentum_3 = delta_w3_arr
+            self.momentum_2 = delta_w2_arr
+            self.momentum_1 = delta_w3_arr
 
 #############################################################################################
 # função de treinamento do modelo NN acima com os parametros dados
+
+
 def train_model_NN(train_x, train_y, batch, epochs):
-    for i in range(epochs):
-        for idx in range(len(train_x)//batch):
+    print('\tTreinamento com batches de {} e {} epochs\n'.format(batch, epochs))
+    print('------------------------------------------------------')
+    for idx in range(len(train_x)//batch):
+        for i in range(epochs):
             part = idx*batch
             flowers.back_Propagation(
                 train_x[part:part+batch], train_y[part:part+batch])
-            # diff = (result-train_y[part:part+batch])*(1/(train_y[part:part+batch]))
-            print('\r epoch | batch | accuracy:{:4d}|{:3d}| not shown.'.format(
-                i, idx,), end='')
+
+            # diff = (result-train_y[part:part+ batch])*(1/(train_y[part:part+batch]))
+            print('\r |epoch|stage|accuracy:   |{:4d}|{:3.0f}%|not shown|'.format(
+                i, ((idx*batch)/(len(train_x)))*100), end='')
+        # result = flowers.feed_Forward(train_x[idx])
+    print('\n------------------------------------------------------')
+# debug methods
+
+
+def debug_methods():
+    final_diff = data_Y - result
+    print('\n\ninit_diff: \n', init_diff[0])
+    print('\nfinal_diff: \n', final_diff[0])
+    print('\ninit_weights_3:\n ', pd.DataFrame(init_weights_3))
+    print('\nweights_3: \n', pd.DataFrame(flowers.weights_3))
+    print('\ninit_weights_2:\n ', pd.DataFrame(init_weights_2))
+    print('\nweights_2: \n', pd.DataFrame(flowers.weights_2))
+    print('\ninit_weights_1:\n ', pd.DataFrame(init_weights_1))
+    print('\nweights_1: \n', pd.DataFrame(flowers.weights_1))
+    print('\nbias_output: \n', pd.DataFrame(flowers.bias_output))
+    print('\nbias_2: \n', pd.DataFrame(flowers.bias_2))
+    print('\nbias_1: \n', pd.DataFrame(flowers.bias_1))
 
 
 #############################################################################################
@@ -166,36 +212,19 @@ flowers = NN(data_X)
 result = flowers.feed_Forward(data_X)
 
 
-
-
 init_diff = result-data_Y
-init_weights_3 = flowers.weights_3
-init_weights_2 = flowers.weights_2
-init_weights_1 = flowers.weights_1
+init_weights_3 = np.copy(flowers.weights_3)
+init_weights_2 = np.copy(flowers.weights_2)
+init_weights_1 = np.copy(flowers.weights_1)
 
-''' treinando e alimentando a rede com os dados '''
+# treinando e alimentando a rede com os dados
+train_model_NN(data_X, data_Y, BATCH, EPOCHS)
 
-# train_model_NN(data_X, data_Y, BATCH, EPOCHS)
-for idx in range(EPOCHS):
-    for i in range(130):
-        flowers.back_Propagation(data_X[i:i+1], data_Y[i:i+1])
-        acc= data_Y[i:i+1]-flowers.feed_Forward(data_X[i:i+1])
-        print('\r |{:4d}| |{:4d}| |acc: |{:5f}|{:5f}|{:5f}\n'.format(i, idx,acc[0][0],acc[0][1],acc[0][2]), end='')
+
 # comparando resultados
-
 result = flowers.feed_Forward(data_X)
-final_diff = result-data_Y
-
-# debug methods
-
-print('\n\ninit_diff: \n', np.mean(init_diff, axis=0))
-print('\nfinal_diff: \n', np.mean(final_diff, axis=0))
-print('\ninit_weights_3:\n ', pd.DataFrame(init_weights_3))
-print('\nweights_3: \n', pd.DataFrame(flowers.weights_3))
-print('\ninit_weights_2:\n ', pd.DataFrame(init_weights_2))
-print('\nweights_2: \n', pd.DataFrame(flowers.weights_2))
-print('\ninit_weights_1:\n ', pd.DataFrame(init_weights_1))
-print('\nweights_1: \n', pd.DataFrame(flowers.weights_1))
-print('\nbias_output: \n', pd.DataFrame(flowers.bias_output))
-print('\nbias_2: \n', pd.DataFrame(flowers.bias_2))
-print('\nbias_1: \n', pd.DataFrame(flowers.bias_1))
+print('result\n',result)
+print('data_Y \n',data_Y)
+matriz_accuracy = np.append(result, data_Y, axis=1)
+# print(matriz_accuracy)
+# debug_methods()
