@@ -1,7 +1,5 @@
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import OneHotEncoder
 
 # deixar o argumento da função abaixo caso queira randomizar os valores de entrada
 np.random.seed(100)
@@ -18,7 +16,7 @@ MOM_RATE = 0.01  # constante de momento
 #############################################################################################
 
 '''preparando os dados de entrada e saída'''
-
+'''
 data = np.array(pd.read_csv('./data.txt'))  # upload dos valores
 if (SHUFFLE_FLAG):
     np.random.shuffle(data)  # embaralhar data
@@ -36,14 +34,15 @@ for i in range(len(data_Y_text)):
         data_Y = np.append(data_Y, [[0, 1, 0]], axis=0)
     elif data_Y_text[i] == 'Iris-virginica':
         data_Y = np.append(data_Y, [[0, 0, 1]], axis=0)
-
+'''
 
 #############################################################################################
 # provisório
 
 '''preparando os dados de entrada e saída'''
 
-iris = pd.read_csv('./iris.csv') # upload dos valores
+data = np.array(pd.read_csv('./data.txt'))  # upload dos valores
+iris = pd.read_csv('./data.csv')
 iris = iris.sample(frac=1).reset_index(drop=True)
 
 X = iris[['SepalLengthCm', 'SepalWidthCm', 'PetalLengthCm', 'PetalWidthCm']]
@@ -56,11 +55,10 @@ Y = iris.Species
 Y = one_hot_encoder.fit_transform(np.array(Y).reshape(-1, 1))
 
 X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.15)
-X_train, X_val, Y_train, Y_val = train_test_split(X_train, Y_train, test_size=0.1)
-data_X = X_train
-data_Y = Y_train
-print(data_X)
-print(data_Y)
+X_train, X_val, Y_train, Y_val = train_test_split(
+    X_train, Y_train, test_size=0.1)
+
+
 
 #############################################################################################
 

@@ -1,4 +1,2 @@
-# ic
-main referente aos arquivos usados
-
-# teste
+# Iniciação Científica
+    Lucas Sales Duarte
