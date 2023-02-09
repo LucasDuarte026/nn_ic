@@ -15,7 +15,7 @@ LEARN_RATE = 0.15  # constante de aprendizado
 
 '''preparando os dados de entrada e saída'''
 
-iris = pd.read_csv('/mnt/c/Users/micro/OneDrive/Documentos/Faculdade/ic_neural_network/all/flowers/projeto_flores/simple/iris.csv')
+iris = pd.read_csv('/mnt/c/Users/micro/OneDrive/Documentos/Faculdade/ic_neural_network/nn_ic/optimized/iris.csv')
 iris = iris.sample(frac=1).reset_index(drop=True)
 
 X = iris[['SepalLengthCm', 'SepalWidthCm', 'PetalLengthCm', 'PetalWidthCm']]
